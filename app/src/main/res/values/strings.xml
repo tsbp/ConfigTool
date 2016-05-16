@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">ConfigTool</string>
+    <!--string name="app_name">Kotel(new)</string-->
+    <string name="delta">Дельта</string>
+    <string name="lanSettings">Сеть</string>
+    <string name="espSettings">Установки</string>
+    <string name="SSID">SSID</string>
+    <string name="SSIDPAS">SSIDPAS</string>
+    <string name="title_activity_settings">Конфигурация</string>
+    <string name="ustanovki">Установки</string>
+    <string name="setTime"> Начало периода</string>
+    <string name="setTemp"> Температура</string>
+    <string name="saved"> Saved</string>
+    <string name="Done"> Done</string>
+    <string name="title_activity_lan_config"> Settings</string>
+    <string name="addrRange"> Диапазон адресов</string>
+</resources>
