@@ -78,13 +78,6 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
         spinnerW.setAdapter(adapterW);
         spinnerS.setAdapter(adapterS);
         spinnerDMode.setAdapter(adapterDMode);
-//        // заголовок
-//        spinner1.setPrompt("Sens1");
-//        spinner2.setPrompt("Sens2");
-        // выделяем элемент
-//        spinner1.setSelection(0);
-//        spinner2.setSelection(0);
-//        spinnerW.setSelection(0);
 
         byte[]cfg = loadConfig();
         if(cfg.length > 0)
@@ -202,8 +195,15 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
     }
     public void onFrameReceived(InetAddress ip, IDataFrame frame)
     {
-        //String str = ;
-        tvInfo.setText(new String(frame.getFrameData()));
+        byte[] in = frame.getFrameData();
+        String str = new String(in);
+        if(in.length > 12)
+        {
+            str = str.substring(4,12) + "    ";
+            tvInfo.setText(str + in[14] + ":" + in[13] + ":"+ in[12] + ", " + in[15] + "." + (in[16]+1) + "."+ in[17]);
+        }
+        else
+            tvInfo.setText(str);
     }
 
     //==============================================================================================
@@ -221,6 +221,11 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String conf = sharedPreferences.getString(configReference, "") ;
         return conf.getBytes();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        udpsend.stop();
     }
 
 }
