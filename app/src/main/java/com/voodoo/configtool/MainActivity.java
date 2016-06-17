@@ -50,7 +50,9 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
         tvInfo = (TextView) findViewById(R.id.tvInfo);
         chbSwap = (CheckBox) findViewById(R.id.chbSwap);
         ssid = (EditText) findViewById(R.id.etSSID);
+        ssid.clearFocus();
         ssidPass = (EditText) findViewById(R.id.etSSIDPASS);
+        ssidPass.clearFocus();
 
         udpsend = new UDPProcessor(7777);
         udpsend.start();
@@ -177,12 +179,20 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
                 if(chbSwap.isChecked()) configData[3] = 1;
                 else configData[3] = 0;
 
-                String str = "HWCFG" +(new String (configData)) + ssid.getText().toString() + "$" + ssidPass.getText().toString();
+                String str = (char)0x11 +(new String (configData)) + ssid.getText().toString() + "$" + ssidPass.getText().toString();
                 byte[]ipAddr = IPHelper.getBroadcastIP4AsBytes();//new byte[]{ (byte)192, (byte) 168, (byte) 4, (byte) 255};
                 try
                 {
-                    DataFrame df = new DataFrame(str.getBytes());
-                    udpsend.send(InetAddress.getByAddress(ipAddr), df);
+                    if(ssidPass.getText().toString().length() < 8)
+                    {
+                        Toast.makeText(MainActivity.this,"Пароль менее 8 символов",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        DataFrame df = new DataFrame(str.getBytes());
+                        udpsend.send(InetAddress.getByAddress(ipAddr), df);
+                    }
 
                 }
                 catch(UnknownHostException e1)
