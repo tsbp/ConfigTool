@@ -26,19 +26,19 @@ import com.voodoo.configtool.UDPProcessor.OnReceiveListener;
 
 public class MainActivity extends AppCompatActivity implements OnReceiveListener{
 
-    Button btnFind, btnSave;
-    TextView tvInfo;
-    CheckBox chbSwap;
-    EditText ssid, ssidPass;
+    private Button btnFind, btnSave;
+    private TextView tvInfo, tvTmp, tvTime;
+    private CheckBox chbSwap;
+    private EditText ssid, ssidPass;
 
-    String[] devMode = {"Master","Slave"};
-    String[] sensType = {"Local", "Remote"};
-    String[] wifiMode= {"NULL_MODE","STATION_MODE","SOFTAP_MODE","STATIONAP_MODE"};
-    String[] wifiSecurityMode = {"AUTH_OPEN","AUTH_WEP","AUTH_WPA_PSK","AUTH_WPA2_PSK","AUTH_WPA_WPA2_PSK","AUTH_MAX"};
+    private String[] devMode = {"Master","Slave"};
+    private String[] sensType = {"Local", "Remote"};
+    private String[] wifiMode= {"NULL_MODE","STATION_MODE","SOFTAP_MODE","STATIONAP_MODE"};
+    private String[] wifiSecurityMode = {"AUTH_OPEN","AUTH_WEP","AUTH_WPA_PSK","AUTH_WPA2_PSK","AUTH_WPA_WPA2_PSK","AUTH_MAX"};
 
     public static String configReference = "lanConfig";
 
-    UDPProcessor udpsend;
+    private UDPProcessor udpsend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,9 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
 
         btnFind = (Button) findViewById(R.id.btnFind);
         btnSave = (Button) findViewById(R.id.btnSave);
-        tvInfo = (TextView) findViewById(R.id.tvInfo);
+        
+        tvTmp = (TextView) findViewById(R.id.tvTmp);
+        tvTime = (TextView) findViewById(R.id.tvTime);
         chbSwap = (CheckBox) findViewById(R.id.chbSwap);
         ssid = (EditText) findViewById(R.id.etSSID);
         ssid.clearFocus();
@@ -156,14 +158,23 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
         btnFind.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                String str = "I1";
+                String str = "";
                 byte[]ipAddr = IPHelper.getBroadcastIP4AsBytes();//new byte[]{ (byte)192, (byte) 168, (byte) 4, (byte) 255};
                 try
                 {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.UK);
+                    byte [] pack = new byte[8];
+                    pack[0] = (byte) 0x20;
+                    pack[1] = 0;
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmss", Locale.UK);
                     Calendar cal = Calendar.getInstance();
-                    str += dateFormat.format(cal.getTime());
-                    DataFrame df = new DataFrame(str.getBytes());
+                    str =  dateFormat.format(cal.getTime());
+
+
+                    for(int  i = 0; i < 6; i++)
+                        pack[i + 2] = (byte)Byte.parseByte(str.substring(i * 2, i * 2 + 2));
+
+                    DataFrame df = new DataFrame(pack);
                     udpsend.send(InetAddress.getByAddress(ipAddr), df);
                 }
                 catch(UnknownHostException e1)
@@ -203,17 +214,48 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
             }
         });
     }
+    //==============================================================================================
+    String rTmp1 = "____";
+    String rTmp2 = "____";
+    //==============================================================================================
     public void onFrameReceived(InetAddress ip, IDataFrame frame)
     {
         byte[] in = frame.getFrameData();
         String str = new String(in);
+
+//        if (IPHelper.convertToString(ip) != "192.168.4.100" )
+//            tvTmp.setText("123");
+
+        switch(in[0])
+        {
+            case (byte)0x10: // BROADCAST_DATA
+                str = str.substring(1,9) + "    ";
+
+                if(in[9] != 0) tvTime.setText(in[11] + ":" + in[10] + ":"+ in[9] + ", " + in[12] + "." + (in[13]+1) + "."+ in[14]);
+
+                if(str.charAt(0) != '0')
+                    rTmp1 = str.substring(0,4);
+                if(str.charAt(4) != '0')
+                    rTmp2 = str.substring(4,8);
+
+                tvTmp.setText(rTmp1 + "  ...  " + rTmp2);
+                break;
+
+            case (byte) 0x21://#define PLOT_DATA_ANS
+                tvTmp.setText("Somebody here!");
+                break;
+
+            default: //case (byte) 0xAA: //OK_ANS
+                tvTmp.setText("SAVED!!!");
+                break;
+
+        }
         if(in.length > 12)
         {
-            str = str.substring(4,12) + "    ";
-            tvInfo.setText(str + in[14] + ":" + in[13] + ":"+ in[12] + ", " + in[15] + "." + (in[16]+1) + "."+ in[17]);
+
         }
-        else
-            tvInfo.setText(str);
+//        else
+//
     }
 
     //==============================================================================================
