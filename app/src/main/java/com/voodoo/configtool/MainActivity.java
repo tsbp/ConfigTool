@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
                 break;
 
             case (byte) 0x21://#define PLOT_DATA_ANS
-                tvTmp.setText("Somebody here!");
+                tvTmp.setText(ip.toString());
                 break;
 
             default: //case (byte) 0xAA: //OK_ANS
