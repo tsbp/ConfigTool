@@ -231,14 +231,14 @@ public class MainActivity extends AppCompatActivity implements OnReceiveListener
             case (byte)0x10: // BROADCAST_DATA
                 str = str.substring(1,9) + "    ";
 
-                if(in[9] != 0) tvTime.setText(in[11] + ":" + in[10] + ":"+ in[9] + ", " + in[12] + "." + (in[13]+1) + "."+ in[14]);
-
                 if(str.charAt(0) != '0')
                     rTmp1 = str.substring(0,4);
                 if(str.charAt(4) != '0')
                     rTmp2 = str.substring(4,8);
-
                 tvTmp.setText(rTmp1 + "  ...  " + rTmp2);
+
+                if(in.length > 9 && in[9] != 0)
+                    tvTime.setText(in[11] + ":" + in[10] + ":"+ in[9] + ", " + in[12] + "." + (in[13]+1) + "."+ in[14]);
                 break;
 
             case (byte) 0x21://#define PLOT_DATA_ANS
